@@ -5,25 +5,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class Application {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String email;
-    private String password;
+    private String status;
+    private LocalDateTime appliedAt;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "user")
-    private List<Application> applications;
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
 
 }
