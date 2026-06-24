@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class JobServiceImpl implements JobService {
@@ -27,6 +26,7 @@ public class JobServiceImpl implements JobService {
         return jobRepository.findAll();
     }
 
+    @Override
     public Job getJobById(Long id) {
         return jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found with id: "+id));
@@ -43,7 +43,6 @@ public class JobServiceImpl implements JobService {
         job1.setCompany(job.getCompany());
         job1.setLocation(job.getLocation());
         job1.setSalary(job.getSalary());
-        job1.setCreatedAt(job.getCreatedAt());
 
         return jobRepository.save(job1);
     }
@@ -51,8 +50,9 @@ public class JobServiceImpl implements JobService {
     @Override
     public void deleteJobById(Long id) {
 
-        Job job = jobRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("Jon not found with id: "+id));
+        Job job = jobRepository.findById(id).
+                orElseThrow(() ->
+                new RuntimeException("Job not found with id: "+id));
 
         jobRepository.deleteById(id);
     }

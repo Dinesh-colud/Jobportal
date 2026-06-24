@@ -3,7 +3,6 @@ package com.dinesh.jobportal.service;
 import com.dinesh.jobportal.entity.Job;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface JobService {
 
