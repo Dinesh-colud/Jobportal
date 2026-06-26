@@ -1,5 +1,6 @@
 package com.dinesh.jobportal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Job {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "job")
+    @JsonIgnore
     private List<Application> applications;
 
 }
