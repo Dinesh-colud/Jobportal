@@ -2,6 +2,7 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.entity.Job;
 import com.dinesh.jobportal.service.JobService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class JobController {
       private JobService jobService;
 
     @PostMapping("/jobs")
-    public ResponseEntity<Job> createJob(@RequestBody Job job){
+    public ResponseEntity<Job> createJob(@Valid @RequestBody Job job){
         Job create =  jobService.createJob(job);
         return new ResponseEntity<>(create, HttpStatus.CREATED);
     }

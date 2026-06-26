@@ -2,6 +2,7 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.entity.Application;
 import com.dinesh.jobportal.service.ApplicationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("/api")
 public class ApplicationController {
 
     @Autowired
     private ApplicationService applicationService;
 
     @PostMapping("/application")
-    public ResponseEntity<Application> createApplication(@RequestBody
+    public ResponseEntity<Application> createApplication(@Valid @RequestBody
                                                          Application application){
         Application app1 = applicationService.createApp(application);
         return new ResponseEntity<>(app1, HttpStatus.CREATED);

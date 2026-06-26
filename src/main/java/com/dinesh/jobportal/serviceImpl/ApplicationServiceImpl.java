@@ -30,7 +30,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         User user = userRepository.findById(application.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Job job = jobRepository.findById(application.getUser().getId())
+        Job job = jobRepository.findById(application.getJob().getId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         application.setUser(user);
