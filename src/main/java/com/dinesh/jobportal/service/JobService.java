@@ -1,18 +1,20 @@
 package com.dinesh.jobportal.service;
 
+import com.dinesh.jobportal.dto.JobRequest;
+import com.dinesh.jobportal.dto.JobResponse;
 import com.dinesh.jobportal.entity.Job;
 
 import java.util.List;
 
 public interface JobService {
 
-    Job createJob(Job job);
+    JobResponse createJob(JobRequest request);
 
-    List<Job> getAllJobs();
+    List<JobResponse> getAllJobs();
 
-    Job getJobById(Long id);
+    JobResponse getJobById(Long id);
 
-    Job updateJobById(Job job, Long id);
+    JobResponse updateJobById(JobRequest request, Long id);
 
     void deleteJobById(Long id);
 

@@ -1,11 +1,14 @@
 package com.dinesh.jobportal.serviceImpl;
 
+import com.dinesh.jobportal.dto.JobRequest;
+import com.dinesh.jobportal.dto.JobResponse;
 import com.dinesh.jobportal.entity.Job;
 import com.dinesh.jobportal.repositories.JobRepository;
 import com.dinesh.jobportal.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,36 +18,95 @@ public class JobServiceImpl implements JobService {
     private JobRepository jobRepository;
 
     @Override
-    public Job createJob(Job job) {
+    public JobResponse createJob(JobRequest request) {
 
-        return jobRepository.save(job);
+        Job job = new Job();
+
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setCompany(request.getCompany());
+        job.setLocation(request.getLocation());
+        job.setSalary(request.getSalary());
+        job.setCreatedAt(LocalDateTime.now());
+
+        Job savedJob = jobRepository.save(job);
+
+        JobResponse response = new JobResponse();
+
+        response.setId(savedJob.getId());
+        response.setTitle(savedJob.getTitle());
+        response.setDescription(savedJob.getDescription());
+        response.setCompany(savedJob.getCompany());
+        response.setLocation(savedJob.getLocation());
+        response.setSalary(savedJob.getSalary());
+        response.setCreatedAt(LocalDateTime.now());
+
+        return response;
     }
 
     @Override
-    public List<Job> getAllJobs() {
+    public List<JobResponse> getAllJobs() {
 
-        return jobRepository.findAll();
+        List<Job> jobs = jobRepository.findAll();
+
+        return jobs.stream().map(job -> {
+               JobResponse response = new JobResponse();
+               response.setId(job.getId());
+               response.setTitle(job.getTitle());
+               response.setDescription(job.getDescription());
+               response.setCompany(job.getCompany());
+               response.setLocation(job.getLocation());
+               response.setSalary(job.getSalary());
+               response.setCreatedAt(LocalDateTime.now());
+
+               return response;
+        }).toList();
     }
 
     @Override
-    public Job getJobById(Long id) {
-        return jobRepository.findById(id)
+    public JobResponse getJobById(Long id) {
+
+        Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found with id: "+id));
+
+        JobResponse response = new JobResponse();
+
+        response.setId(job.getId());
+        response.setTitle(job.getTitle());
+        response.setDescription(job.getDescription());
+        response.setCompany(job.getCompany());
+        response.setLocation(job.getLocation());
+        response.setSalary(job.getSalary());
+        response.setCreatedAt(LocalDateTime.now());
+
+        return response;
     }
 
     @Override
-    public Job updateJobById(Job job, Long id) {
+    public JobResponse updateJobById(JobRequest request, Long id) {
 
-        Job job1 = jobRepository.findById(id).orElseThrow(() ->
+        Job job = jobRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Job not found with id: "+id));
 
-        job1.setTitle(job.getTitle());
-        job1.setDescription(job.getDescription());
-        job1.setCompany(job.getCompany());
-        job1.setLocation(job.getLocation());
-        job1.setSalary(job.getSalary());
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setCompany(request.getCompany());
+        job.setLocation(request.getLocation());
+        job.setSalary(request.getSalary());
 
-        return jobRepository.save(job1);
+        Job savedJob = jobRepository.save(job);
+
+        JobResponse response = new JobResponse();
+
+        response.setId(savedJob.getId());
+        response.setTitle(savedJob.getTitle());
+        response.setDescription(savedJob.getDescription());
+        response.setCompany(savedJob.getCompany());
+        response.setLocation(savedJob.getLocation());
+        response.setSalary(savedJob.getSalary());
+        response.setCreatedAt(LocalDateTime.now());
+
+        return response;
     }
 
     @Override

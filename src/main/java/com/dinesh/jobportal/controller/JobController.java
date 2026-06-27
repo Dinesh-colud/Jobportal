@@ -1,5 +1,7 @@
 package com.dinesh.jobportal.controller;
 
+import com.dinesh.jobportal.dto.JobRequest;
+import com.dinesh.jobportal.dto.JobResponse;
 import com.dinesh.jobportal.entity.Job;
 import com.dinesh.jobportal.service.JobService;
 import jakarta.validation.Valid;
@@ -18,27 +20,27 @@ public class JobController {
       private JobService jobService;
 
     @PostMapping("/jobs")
-    public ResponseEntity<Job> createJob(@Valid @RequestBody Job job){
-        Job create =  jobService.createJob(job);
+    public ResponseEntity<JobResponse> createJob(@Valid @RequestBody JobRequest request){
+        JobResponse create =  jobService.createJob(request);
         return new ResponseEntity<>(create, HttpStatus.CREATED);
     }
 
     @GetMapping("/jobs")
-    public ResponseEntity<List<Job>> getAllJobs(){
-        List<Job> getAll = jobService.getAllJobs();
+    public ResponseEntity<List<JobResponse>> getAllJobs(){
+        List<JobResponse> getAll = jobService.getAllJobs();
         return new ResponseEntity<>(getAll, HttpStatus.OK);
     }
 
     @GetMapping("/jobs/{id}")
-    public ResponseEntity<Job> getJobById(@PathVariable Long id) {
-        Job job = jobService.getJobById(id);
+    public ResponseEntity<JobResponse> getJobById(@PathVariable Long id) {
+        JobResponse job = jobService.getJobById(id);
         return ResponseEntity.ok(job);
     }
 
     @PutMapping("/jobs/{id}")
-    public ResponseEntity<Job> updateJob(@RequestBody Job job,
+    public ResponseEntity<JobResponse> updateJob(@RequestBody JobRequest request,
                                          @PathVariable Long id){
-        Job update = jobService.updateJobById(job, id);
+        JobResponse update = jobService.updateJobById(request, id);
 
         return new ResponseEntity<>(update, HttpStatus.OK);
     }

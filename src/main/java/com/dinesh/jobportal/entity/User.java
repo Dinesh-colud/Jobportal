@@ -27,6 +27,7 @@ public class User {
 
     @Email(message = "Invalid email format")
     @NotBlank(message = "email is required")
+    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank(message = "password is required")

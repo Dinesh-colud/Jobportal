@@ -1,5 +1,7 @@
 package com.dinesh.jobportal.controller;
 
+import com.dinesh.jobportal.dto.ApplicationRequest;
+import com.dinesh.jobportal.dto.ApplicationResponse;
 import com.dinesh.jobportal.entity.Application;
 import com.dinesh.jobportal.service.ApplicationService;
 import jakarta.validation.Valid;
@@ -18,30 +20,30 @@ public class ApplicationController {
     private ApplicationService applicationService;
 
     @PostMapping("/application")
-    public ResponseEntity<Application> createApplication(@Valid @RequestBody
-                                                         Application application){
-        Application app1 = applicationService.createApp(application);
+    public ResponseEntity<ApplicationResponse> createApplication(@Valid @RequestBody
+                                                                 ApplicationRequest request){
+        ApplicationResponse app1 = applicationService.createApp(request);
         return new ResponseEntity<>(app1, HttpStatus.CREATED);
     }
 
     @GetMapping("/application")
-    public ResponseEntity<List<Application>> getAllApplication(){
-        List<Application> applications = applicationService.getAllApp();
+    public ResponseEntity<List<ApplicationResponse>> getAllApplication(){
+        List<ApplicationResponse> applications = applicationService.getAllApp();
 
         return new ResponseEntity<>(applications, HttpStatus.OK);
     }
 
     @GetMapping("/application/{id}")
-    public ResponseEntity<Application> getApplicationById(@PathVariable
+    public ResponseEntity<ApplicationResponse> getApplicationById(@PathVariable
                                                           Long id){
-        Application application = applicationService.getAppById(id);
+        ApplicationResponse application = applicationService.getAppById(id);
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
 
     @PutMapping("/application/{id}")
-    public ResponseEntity<Application> updateApplication(@RequestBody Application application,
+    public ResponseEntity<ApplicationResponse> updateApplication(@RequestBody ApplicationRequest request,
                                                          @PathVariable Long id){
-        Application application1 = applicationService.updateApp(application, id);
+        ApplicationResponse application1 = applicationService.updateApp(request, id);
 
         return new ResponseEntity<>(application1, HttpStatus.OK);
     }

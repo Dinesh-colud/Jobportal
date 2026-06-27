@@ -1,18 +1,20 @@
 package com.dinesh.jobportal.service;
 
+import com.dinesh.jobportal.dto.ApplicationRequest;
+import com.dinesh.jobportal.dto.ApplicationResponse;
 import com.dinesh.jobportal.entity.Application;
 
 import java.util.List;
 
 public interface ApplicationService {
 
-    Application createApp(Application application);
+    ApplicationResponse createApp(ApplicationRequest request);
 
-    List<Application> getAllApp();
+    List<ApplicationResponse> getAllApp();
 
-    Application getAppById(Long id);
+    ApplicationResponse getAppById(Long id);
 
-    Application updateApp(Application application, Long id);
+    ApplicationResponse updateApp(ApplicationRequest request, Long id);
 
 
     void deleteApp(Long id);
