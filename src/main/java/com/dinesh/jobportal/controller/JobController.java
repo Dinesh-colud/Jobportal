@@ -2,7 +2,6 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.dto.JobRequest;
 import com.dinesh.jobportal.dto.JobResponse;
-import com.dinesh.jobportal.entity.Job;
 import com.dinesh.jobportal.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
