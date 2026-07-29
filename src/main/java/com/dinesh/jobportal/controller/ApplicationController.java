@@ -2,7 +2,6 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.dto.ApplicationRequest;
 import com.dinesh.jobportal.dto.ApplicationResponse;
-import com.dinesh.jobportal.entity.Application;
 import com.dinesh.jobportal.service.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

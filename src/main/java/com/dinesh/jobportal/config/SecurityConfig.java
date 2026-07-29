@@ -4,6 +4,7 @@ import com.dinesh.jobportal.security.services.UserDetailsServiceImpl;
 import com.dinesh.jobportal.security.services.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -47,9 +49,21 @@ public class SecurityConfig {
                                         "/swagger-ui/**",
                                         "/swagger-ui.html")
                                 .permitAll()
+
+
+                                .requestMatchers(HttpMethod.POST, "/api/jobs/**").hasRole("RECRUITER")
+                                .requestMatchers(HttpMethod.PUT, "/api/jobs/**").hasRole("RECRUITER")
+                                .requestMatchers(HttpMethod.DELETE, "/api/jobs/**").hasRole("RECRUITER")
+
+                                .requestMatchers(HttpMethod.GET, "/api/jobs/**").hasAnyRole("RECRUITER", "CANDIDATE")
+
                                 .anyRequest()
-                                .authenticated()
-                );
+                                .authenticated())
+
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
