@@ -360,7 +360,7 @@ GitHub:
 https://github.com/Dinesh-colud
 
 LinkedIn:
-www.linkedin.com/in/dinesh-rajbhar-8a9010333
+www.linkedin.com/in/dineshrajbharjavadeveloper
 
 ---
 
