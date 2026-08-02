@@ -2,6 +2,7 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.dto.ApplicationRequest;
 import com.dinesh.jobportal.dto.ApplicationResponse;
+import com.dinesh.jobportal.entity.Application;
 import com.dinesh.jobportal.service.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -63,5 +66,12 @@ public class ApplicationController {
     public ResponseEntity<String> deleteApplicationById(@PathVariable Long id){
         applicationService.deleteApp(id);
         return ResponseEntity.ok("Application deleted successfully!");
+    }
+
+    @PostMapping("/{id}/upload-resume")
+    public ResponseEntity<String> uploadResume(@PathVariable Long id,
+                                               @RequestParam("resume")MultipartFile file) throws IOException {
+        applicationService.uploadResume(id, file);
+        return ResponseEntity.ok("Resume uploaded successfully");
     }
 }

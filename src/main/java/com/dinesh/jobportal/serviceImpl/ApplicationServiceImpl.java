@@ -13,6 +13,15 @@ import com.dinesh.jobportal.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -152,5 +161,31 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.deleteById(id);
     }
 
+    @Override
+    public void uploadResume(Long applicationId, MultipartFile file) throws IOException {
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id:"+applicationId));
+
+        String uploadDir = "uploads/resumes/";
+
+        File directory = new File(uploadDir);
+
+        if (!directory.exists()){
+            directory.mkdirs();
+        }
+
+        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        Path path = Paths.get(uploadDir, filename);
+
+        Files.copy(file.getInputStream(), path);
+
+        application.setResumePath(path.toString());
+
+        applicationRepository.save(application);
+
+
+    }
 
 }

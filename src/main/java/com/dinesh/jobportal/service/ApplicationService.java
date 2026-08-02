@@ -2,7 +2,9 @@ package com.dinesh.jobportal.service;
 
 import com.dinesh.jobportal.dto.ApplicationRequest;
 import com.dinesh.jobportal.dto.ApplicationResponse;
-import com.dinesh.jobportal.entity.Application;
+
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 import java.util.List;
 
@@ -18,4 +20,6 @@ public interface ApplicationService {
 
 
     void deleteApp(Long id);
+
+    void uploadResume(Long applicationId, MultipartFile file) throws IOException;
 }
