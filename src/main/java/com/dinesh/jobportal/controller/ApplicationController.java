@@ -2,7 +2,6 @@ package com.dinesh.jobportal.controller;
 
 import com.dinesh.jobportal.dto.ApplicationRequest;
 import com.dinesh.jobportal.dto.ApplicationResponse;
-import com.dinesh.jobportal.entity.Application;
 import com.dinesh.jobportal.service.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -69,6 +68,8 @@ public class ApplicationController {
     }
 
     @PostMapping("/{id}/upload-resume")
+    @Tag(name = "Applications APIs", description = "APIs related to job applications")
+    @Operation(description = "Upload Resume", summary = "APIs to upload resume")
     public ResponseEntity<String> uploadResume(@PathVariable Long id,
                                                @RequestParam("resume")MultipartFile file) throws IOException {
         applicationService.uploadResume(id, file);
