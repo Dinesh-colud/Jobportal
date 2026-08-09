@@ -3,11 +3,12 @@ package com.dinesh.jobportal.serviceImpl;
 import com.dinesh.jobportal.dto.UserRequest;
 import com.dinesh.jobportal.dto.UserResponse;
 import com.dinesh.jobportal.entity.User;
+import com.dinesh.jobportal.exception.DuplicateResourceException;
 import com.dinesh.jobportal.exception.ResourceNotFoundException;
 import com.dinesh.jobportal.repositories.UserRepository;
 import com.dinesh.jobportal.service.UserService;
-import com.sun.jdi.request.DuplicateRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,30 +20,33 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public UserResponse createUser(UserRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
 
         User user = new User();
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
 
         User savedUser = userRepository.save(user);
 
-        UserResponse userResponse = new UserResponse();
+//        UserResponse userResponse = new UserResponse();
+//
+//        userResponse.setId(savedUser.getId());
+//        userResponse.setName(savedUser.getName());
+//        userResponse.setEmail(savedUser.getEmail());
+//        userResponse.setRole(savedUser.getRole());
 
-        userResponse.setId(savedUser.getId());
-        userResponse.setName(savedUser.getName());
-        userResponse.setEmail(savedUser.getEmail());
-        userResponse.setRole(savedUser.getRole());
-
-        return userResponse;
+        return toResponse(savedUser);
     }
 
     @Override
@@ -66,7 +70,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(Long id) {
 
         User user = userRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("User not found with id: "+id));
+                new ResourceNotFoundException("User not found with id: "+id));
 
         UserResponse userResponse = new UserResponse();
 
@@ -84,7 +88,7 @@ public class UserServiceImpl implements UserService {
         Optional<User> existUser = userRepository.findByEmail(request.getEmail());
 
         if(existUser.isPresent() && !existUser.get().getId().equals(id)){
-            throw new DuplicateRequestException("Email already exists!");
+            throw new DuplicateResourceException("Email already exists!");
         }
 
         User user = userRepository.findById(id).orElseThrow(() ->
@@ -92,19 +96,28 @@ public class UserServiceImpl implements UserService {
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
 
         User updatedUser = userRepository.save(user);
 
-        UserResponse userResponse = new UserResponse();
+//        UserResponse userResponse = new UserResponse();
+//
+//        userResponse.setId(updatedUser.getId());
+//        userResponse.setName(updatedUser.getName());
+//        userResponse.setEmail(updatedUser.getEmail());
+//        userResponse.setRole(updatedUser.getRole());
 
-        userResponse.setId(updatedUser.getId());
-        userResponse.setName(updatedUser.getName());
-        userResponse.setEmail(updatedUser.getEmail());
-        userResponse.setRole(updatedUser.getRole());
+        return toResponse(updatedUser);
+    }
 
-        return userResponse;
+    private UserResponse toResponse(User user) {
+        UserResponse r = new UserResponse();
+        r.setId(user.getId());
+        r.setName(user.getName());
+        r.setEmail(user.getEmail());
+        r.setRole(user.getRole());
+        return r;
     }
 
     @Override
@@ -112,7 +125,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() ->
-                new RuntimeException("User not found with id: "+id));
+                new ResourceNotFoundException("User not found with id: "+id));
 
         userRepository.deleteById(id);
     }
