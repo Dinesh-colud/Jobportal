@@ -50,7 +50,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         application.setStatus(request.getStatus());
         application.setAppliedAt(LocalDateTime.now());
-
         application.setUser(user);
         application.setJob(job);
 
