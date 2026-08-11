@@ -13,6 +13,7 @@ import com.dinesh.jobportal.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.swing.*;
@@ -24,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
@@ -164,19 +166,42 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void uploadResume(Long applicationId, MultipartFile file) throws IOException {
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id:"+applicationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: "+applicationId));
+
+        if(file.isEmpty()){
+            throw new  IllegalArgumentException("File is empty");
+        }
+
+        String contentType = file.getContentType();
+        if(contentType == null || !(contentType.equals("application/pdf")
+         || contentType.equals("application/msword")
+         || contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
+            throw new IllegalArgumentException("only PDF or Word documents are allowed");
+        }
+
+        long maxSizeByte = 5 * 1024 * 1024;
+        if (file.getSize() > maxSizeByte){
+            throw new IllegalArgumentException("file too large(max 5MB)");
+        }
 
         String uploadDir = "uploads/resumes/";
-
         File directory = new File(uploadDir);
-
         if (!directory.exists()){
             directory.mkdirs();
         }
 
-        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? ""
+                : file.getOriginalFilename());
 
-        Path path = Paths.get(uploadDir, filename);
+        String extension = original.contains(".") ?
+                original.substring(original.lastIndexOf('.')) : "";
+
+        String filename = applicationId + "_" + UUID.randomUUID() + extension;
+
+        Path path = Paths.get(uploadDir, filename).normalize();
+        if(path.startsWith(Paths.get(uploadDir).normalize())){
+            throw new IllegalArgumentException("Invalid file path");
+        }
 
         Files.copy(file.getInputStream(), path);
 
