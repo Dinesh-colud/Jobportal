@@ -11,13 +11,13 @@ import com.dinesh.jobportal.repositories.JobRepository;
 import com.dinesh.jobportal.repositories.UserRepository;
 import com.dinesh.jobportal.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -40,7 +40,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JobRepository jobRepository;
 
-    private User currentUser(){
+    private User currentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
@@ -51,70 +51,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"));
     }
 
-    @Override
-    public ApplicationResponse createApp(ApplicationRequest request) {
-
-        User user = currentUser();
-//        User user = userRepository.findById(request.getUserId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Job job = jobRepository.findById(request.getJobId())
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        Application application = new Application();
-
-        application.setStatus(request.getStatus());
-        application.setAppliedAt(LocalDateTime.now());
-        application.setUser(user);
-        application.setJob(job);
-
-        Application savedApplication = applicationRepository.save(application);
-
-        ApplicationResponse response = new ApplicationResponse();
-
-        response.setId(savedApplication.getId());
-        response.setStatus(savedApplication.getStatus());
-        response.setAppliedAt(savedApplication.getAppliedAt());
-
-        response.setUserId(user.getId());
-        response.setUserName(user.getName());
-
-        response.setJobId(job.getId());
-        response.setJobTitle(job.getTitle());
-        response.setCompany(job.getCompany());
-
-        return response;
+    // throws if the caller is neither a recruiter nor the owner of the application
+    private void assertOwnerOrRecruiter(Application application) {
+        if (!isRecruiter() && !application.getUser().getId().equals(currentUser().getId())) {
+            throw new AccessDeniedException("You don't have permission to access this application");
+        }
     }
 
-    @Override
-    public List<ApplicationResponse> getAllApp() {
-
-        List<Application> applications = applicationRepository.findAll();
-
-        return applications.stream()
-                .map(application -> {
-                    ApplicationResponse response = new ApplicationResponse();
-                    response.setId(application.getId());
-                    response.setStatus(application.getStatus());
-                    response.setAppliedAt(application.getAppliedAt());
-
-                    response.setUserId(application.getUser().getId());
-                    response.setUserName(application.getUser().getName());
-
-                    response.setJobId(application.getJob().getId());
-                    response.setJobTitle(application.getJob().getTitle());
-                    response.setCompany(application.getJob().getCompany());
-
-                    return response;
-                }).toList();
-    }
-
-    @Override
-    public ApplicationResponse getAppById(Long id) {
-
-        Application application = applicationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: "+id));
-
+    private ApplicationResponse toResponse(Application application) {
         ApplicationResponse response = new ApplicationResponse();
         response.setId(application.getId());
         response.setStatus(application.getStatus());
@@ -131,46 +75,78 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public ApplicationResponse createApp(ApplicationRequest request) {
+
+        // owner is always the logged-in candidate, never taken from the request body
+        User user = currentUser();
+
+        Job job = jobRepository.findById(request.getJobId())
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        Application application = new Application();
+
+        application.setStatus(request.getStatus());
+        application.setAppliedAt(LocalDateTime.now());
+        application.setUser(user);
+        application.setJob(job);
+
+        Application savedApplication = applicationRepository.save(application);
+
+        return toResponse(savedApplication);
+    }
+
+    @Override
+    public List<ApplicationResponse> getAllApp() {
+
+        // recruiters see everything, candidates only see their own applications
+        List<Application> applications = isRecruiter()
+                ? applicationRepository.findAll()
+                : applicationRepository.findByUserId(currentUser().getId());
+
+        return applications.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public ApplicationResponse getAppById(Long id) {
+
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + id));
+
+        assertOwnerOrRecruiter(application);
+
+        return toResponse(application);
+    }
+
+    @Override
     public ApplicationResponse updateApp(ApplicationRequest request, Long id) {
 
         Application application = applicationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: "+id));
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + id));
 
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"+request.getUserId()));
+        assertOwnerOrRecruiter(application);
 
         Job job = jobRepository.findById(request.getJobId())
-                .orElseThrow(() -> new ResourceNotFoundException("Job not found"+request.getJobId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found: " + request.getJobId()));
 
+        // status and job can be updated; the application's owner cannot be
+        // reassigned to another user via the request body
         application.setStatus(request.getStatus());
-
-        application.setUser(user);
         application.setJob(job);
 
         Application updatedApplication = applicationRepository.save(application);
 
-        ApplicationResponse response = new ApplicationResponse();
-
-        response.setId(updatedApplication.getId());
-        response.setStatus(updatedApplication.getStatus());
-        response.setAppliedAt(updatedApplication.getAppliedAt());
-
-        response.setUserId(updatedApplication.getUser().getId());
-        response.setUserName(updatedApplication.getUser().getName());
-
-        response.setJobId(updatedApplication.getJob().getId());
-        response.setJobTitle(updatedApplication.getJob().getTitle());
-        response.setCompany(updatedApplication.getJob().getCompany());
-
-
-        return response;
+        return toResponse(updatedApplication);
     }
 
     @Override
     public void deleteApp(Long id) {
 
         Application application = applicationRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Application not found with id: "+id));
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + id));
+
+        assertOwnerOrRecruiter(application);
 
         applicationRepository.deleteById(id);
     }
@@ -179,40 +155,43 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void uploadResume(Long applicationId, MultipartFile file) throws IOException {
 
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: "+applicationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + applicationId));
 
-        if(file.isEmpty()){
-            throw new  IllegalArgumentException("File is empty");
+        assertOwnerOrRecruiter(application);
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
         }
 
         String contentType = file.getContentType();
-        if(contentType == null || !(contentType.equals("application/pdf")
-         || contentType.equals("application/msword")
-         || contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
-            throw new IllegalArgumentException("only PDF or Word documents are allowed");
+        if (contentType == null || !(contentType.equals("application/pdf")
+                || contentType.equals("application/msword")
+                || contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
+            throw new IllegalArgumentException("Only PDF or Word documents are allowed");
         }
 
-        long maxSizeByte = 5 * 1024 * 1024;
-        if (file.getSize() > maxSizeByte){
-            throw new IllegalArgumentException("file too large(max 5MB)");
+        long maxSizeBytes = 5 * 1024 * 1024;
+        if (file.getSize() > maxSizeBytes) {
+            throw new IllegalArgumentException("File too large (max 5MB)");
         }
 
         String uploadDir = "uploads/resumes/";
         File directory = new File(uploadDir);
-        if (!directory.exists()){
+        if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? ""
-                : file.getOriginalFilename());
+        String original = StringUtils.cleanPath(
+                file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
 
-        String extension = original.contains(".") ?
-                original.substring(original.lastIndexOf('.')) : "";
+        String extension = original.contains(".")
+                ? original.substring(original.lastIndexOf('.'))
+                : "";
 
         String filename = applicationId + "_" + UUID.randomUUID() + extension;
 
         Path path = Paths.get(uploadDir, filename).normalize();
-        if(path.startsWith(Paths.get(uploadDir).normalize())){
+        if (!path.startsWith(Paths.get(uploadDir).normalize())) {
             throw new IllegalArgumentException("Invalid file path");
         }
 
@@ -221,8 +200,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         application.setResumePath(path.toString());
 
         applicationRepository.save(application);
-
-
     }
 
 }

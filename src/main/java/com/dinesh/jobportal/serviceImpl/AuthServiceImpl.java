@@ -5,10 +5,10 @@ import com.dinesh.jobportal.authenticationDTO.LoginRequest;
 import com.dinesh.jobportal.authenticationDTO.SignupRequest;
 import com.dinesh.jobportal.entity.Role;
 import com.dinesh.jobportal.entity.User;
+import com.dinesh.jobportal.exception.DuplicateResourceException;
 import com.dinesh.jobportal.repositories.UserRepository;
 import com.dinesh.jobportal.security.services.jwt.JwtUtils;
 import com.dinesh.jobportal.service.AuthService;
-import com.sun.jdi.request.DuplicateRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String register(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new DuplicateRequestException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
 
         User user = new User();

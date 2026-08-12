@@ -2,12 +2,12 @@ package com.dinesh.jobportal.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.channels.AcceptPendingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,9 +41,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
 
-    @ExceptionHandler(AcceptPendingException.class)
-    public ResponseEntity<String> handleAcceptPendingException(AcceptPendingException ex){
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("you don't have permission to do this");
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex){
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You don't have permission to do this");
     }
 
     // Handle custom Exception
