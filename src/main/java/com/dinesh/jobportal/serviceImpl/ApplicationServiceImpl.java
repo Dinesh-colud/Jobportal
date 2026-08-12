@@ -11,6 +11,7 @@ import com.dinesh.jobportal.repositories.JobRepository;
 import com.dinesh.jobportal.repositories.UserRepository;
 import com.dinesh.jobportal.service.ApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.util.StringUtils;
@@ -39,11 +40,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JobRepository jobRepository;
 
+    private User currentUser(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
+    }
+
+    private boolean isRecruiter() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"));
+    }
+
     @Override
     public ApplicationResponse createApp(ApplicationRequest request) {
 
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = currentUser();
+//        User user = userRepository.findById(request.getUserId())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
