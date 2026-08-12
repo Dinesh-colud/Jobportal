@@ -3,12 +3,16 @@ package com.dinesh.jobportal.config;
 import com.dinesh.jobportal.entity.Role;
 import com.dinesh.jobportal.entity.User;
 import com.dinesh.jobportal.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -31,9 +35,9 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(recruiter);
 
-            System.out.println("Default is created!");
+            log.info("Default recruiter account created");
         } else {
-            System.out.println("Recruiter already exists!");
+            log.info("Recruiter already exists, skipping seed data");
         }
 
     }
